@@ -74,6 +74,10 @@ button {
     color:blue;
 }
 
+.error-message {
+    color: red;
+}
+
 .js-hidden{
     display:none;
 }
