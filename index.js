@@ -23,16 +23,15 @@ function formatParameters(param){
     return queryitems.join('&');   
 }
 
-
-
-function getParks(state, max=10){
+function getParks(state, max=2){
    // call a function to format the parameters with the user input
    //call the API using fetch
    //catch errors
-  
+   state = state.replace(/[ ,]+/g, ",");
    const params = {
     stateCode: state,
     limit: max,
+    fields:'addresses',
     api_key: apiKey,   
     };
    const queryString = formatParameters(params);
@@ -48,7 +47,7 @@ function getParks(state, max=10){
     })
     .then(responseJson=>{
         console.log(responseJson);
-        displayResults(responseJson);
+        displayResults(responseJson,state);
     })
     .catch(err => {
         $('#js-error-message').text(`Something went wrong. Double check your abbreviation.`)
@@ -57,17 +56,32 @@ function getParks(state, max=10){
    console.log(`getParks ran`);
 }
 
+function getPhysicalAddress(responseJson){
+  console.log(`this is the address ${responseJson.data[0].addresses[0].type}`);
+  let addressNumber = responseJson.data[0].addresses.length;
+  console.log(`this is how many addresses ${addressNumber}`);
+  for (let j=0; j < addressNumber; j++){
+      if (responseJson.data[0].addresses[j].type==='Physical'){
+        return j;
+    }//end of if
+  }//end of for
+  
+   return 'No physical address';
+}
 
-function displayResults(responseJson){
+function displayResults(responseJson,state){
     //clear the results
     //display the results (full name, decrip, url, address)
+  
     let length = responseJson.data.length;
     console.log(responseJson.data[0].fullName);
     $('.results').empty();
     $('#js-error-message').empty();
-    $('.results').append(`<h2>Your Results</h2><ul class="results-list"></ul>`);
+    $('.results').append(`<h2>Your Results for ${state}</h2><ul class="results-list"></ul>`);
     for (let i=0;i<length;i++){
-        $('.results-list').append(`<li><h3>National Park ${i+1}</h3><p>Name: ${responseJson.data[i].fullName}</p><p>Description: ${responseJson.data[i].description}</p><a href="${responseJson.data[i].url}">Link: ${responseJson.data[i].url}</a></li>`);
+        let addressNumber = getPhysicalAddress(responseJson);
+        console.log(addressNumber);
+        $('.results-list').append(`<li><h3>National Park ${i+1}</h3><p>Name: ${responseJson.data[i].fullName}</p><p>Description: ${responseJson.data[i].description}</p><a href="${responseJson.data[i].url}">Link: ${responseJson.data[i].url}</a><p class="address">${responseJson.data[i].addresses[addressNumber].city}</p></li>`);
     }
     $('.results').removeClass('js-hidden');
     console.log(`displayResults ran`);
@@ -84,10 +98,11 @@ function watchForm(){
         event.preventDefault();
         let state = $('#state-name').val();
         const max = $('#max-results').val();
-        console.log(typeof(state));
-        state = state.replace(/[ ,]+/g, ",");
-        console.log(`this is the state input ${state}`);
-
+        //console.log(typeof(state));
+       // state = state.replace(/[ ,]+/g, ",");
+       // console.log(`this is the state input ${state}`);
+       $('#state-name').val("");
+       $('#max-results').val(10);
         getParks(state, max);
     });
    
