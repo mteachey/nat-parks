@@ -33,7 +33,7 @@ function getParks(state, max=10){
     };
    const queryString = formatParameters(params);
    const url = endPoint + '?' + queryString;
-
+  
    fetch(url)
     .then(response =>{
         if(response.ok){
@@ -54,13 +54,15 @@ function getParks(state, max=10){
 
 function getPhysicalAddress(responseJson,i){
  
-  let addressNumber = responseJson.data[0].addresses.length;
- 
+  let addressNumber = responseJson.data[i].addresses.length;
+   
   for (let j=0; j < addressNumber; j++){
-      if (responseJson.data[i].addresses[j].type==='Physical'){
-        return j;
-    }//end of if
+     if (responseJson.data[i].addresses[j].type==='Physical'){
+        
+        return `${responseJson.data[i].addresses[j].line1} ${responseJson.data[i].addresses[j].line2} ${responseJson.data[i].addresses[j].city},${responseJson.data[i].addresses[j].stateCode} ${responseJson.data[i].addresses[j].postalCode}`;
+    }//end of if   
   }//end of for
+  return 'No Physical Address'
 }
 
 function displayResults(responseJson,state){
@@ -73,9 +75,11 @@ function displayResults(responseJson,state){
     $('#js-error-message').empty();
     $('.results').append(`<h2>Your Results for ${state}</h2><ul class="results-list"></ul>`);
     for (let i=0;i<length;i++){
-        let addressNumber = getPhysicalAddress(responseJson,i);
+       
+        let address = getPhysicalAddress(responseJson,i);
         
-        $('.results-list').append(`<li><h3>National Park ${i+1}</h3><p>Name: ${responseJson.data[i].fullName}</p><p>Description: ${responseJson.data[i].description}</p><a href="${responseJson.data[i].url}">Link: ${responseJson.data[i].url}</a><p class="address">Physical Address:<br>${responseJson.data[i].addresses[addressNumber].line1} ${responseJson.data[i].addresses[addressNumber].line2} ${responseJson.data[i].addresses[addressNumber].city},${responseJson.data[i].addresses[addressNumber].stateCode} ${responseJson.data[i].addresses[addressNumber].postalCode}</p></li>`);
+        $('.results-list').append(`<li><h3>National Park ${i+1}</h3><p>Name: ${responseJson.data[i].fullName}</p><p>Description: ${responseJson.data[i].description}</p><a href="${responseJson.data[i].url}">Link: ${responseJson.data[i].url}</a><p class="address">Physical Address:<br>${address}</p></li>`);
+
     }
     $('.results').removeClass('js-hidden');
    
